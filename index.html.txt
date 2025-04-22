@@ -53,7 +53,7 @@
           if (index === 0) tr.classList.add("vencedor");
 
           tr.innerHTML = `
-            <td>${piloto.kart || ""}</td>
+            <td>${piloto.kart || "   "}</td>
             <td>${piloto.melhor_volta || "--:--:---"}</td>
             <td>${piloto.nome || "Desconhecido"}</td>
             <td>${piloto.tempo_atual || "--:--:---"}</td>
