@@ -1,0 +1,83 @@
+<!DOCTYPE html><html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Classificação Corrida</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #333;
+      color: #fff;
+    }
+    tr:nth-child(even) {
+      background-color: #e9e9e9;
+    }
+    .loading {
+      text-align: center;
+      margin-top: 50px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Classificação da Corrida</h1>
+  <div class="loading" id="loading">Carregando dados...</div>
+  <table id="tabelaResultados" style="display: none;">
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Kart</th>
+        <th>Melhor Volta</th>
+        <th>Tempo Atual</th>
+        <th>Voltas</th>
+      </tr>
+    </thead>
+    <tbody id="corpoTabela"></tbody>
+  </table>  <script>
+    fetch('https://cronometregemgps-default-rtdb.firebaseio.com/.json')
+      .then(response => response.json())
+      .then(data => {
+        const tabela = document.getElementById('tabelaResultados');
+        const corpoTabela = document.getElementById('corpoTabela');
+        const loading = document.getElementById('loading');
+
+        const resultados = Object.values(data);
+        resultados.sort((a, b) => (a.melhor_volta || '').localeCompare(b.melhor_volta || ''));
+
+        resultados.forEach(entry => {
+          const linha = document.createElement('tr');
+          linha.innerHTML = `
+            <td>${entry.nome_piloto || 'Desconhecido'}</td>
+            <td>${entry.numero_kart || '-'}</td>
+            <td>${entry.melhor_volta || '-'}</td>
+            <td>${entry.tempo_atual || '-'}</td>
+            <td>${entry.voltas || 0}</td>
+          `;
+          corpoTabela.appendChild(linha);
+        });
+
+        loading.style.display = 'none';
+        tabela.style.display = 'table';
+      })
+      .catch(error => {
+        document.getElementById('loading').innerText = 'Erro ao carregar os dados.';
+        console.error('Erro:', error);
+      });
+  </script></body>
+</html>
