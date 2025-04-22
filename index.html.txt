@@ -66,11 +66,12 @@
         tabela.innerHTML = "";
         pilotos.forEach((piloto, index) => {
           console.log("Piloto:", piloto);
+          console.log("Campos do piloto:", Object.keys(piloto));
           const tr = document.createElement("tr");
           if (index === 0) tr.classList.add("vencedor");
           tr.innerHTML = ` 
-            <td>${piloto.nome || "Desconhecido"}</td>
-            <td>${piloto.kart || ""}</td>
+            <td>${piloto.nome || piloto.Nome || "Desconhecido"}</td>
+            <td>${piloto.kart || piloto.Kart || ""}</td>
             <td>${piloto.melhor_volta || "--:--:---"}</td>
             <td>${piloto.tempo_atual || "--:--:---"}</td>
             <td>${piloto.voltas || 0}</td>
