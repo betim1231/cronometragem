@@ -1,83 +1,59 @@
-<!DOCTYPE html><html lang="pt-br">
+<!DOCTYPE html>
+<html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Classificação Corrida</title>
+  <title>Resultados da Corrida</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f2f2f2;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: center;
-    }
-    th {
-      background-color: #333;
-      color: #fff;
-    }
-    tr:nth-child(even) {
-      background-color: #e9e9e9;
-    }
-    .loading {
-      text-align: center;
-      margin-top: 50px;
-    }
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    h1 { color: #333; }
+    .piloto { margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
+    .vencedor { background-color: #e0ffe0; font-weight: bold; }
   </style>
 </head>
 <body>
-  <h1>Classificação da Corrida</h1>
-  <div class="loading" id="loading">Carregando dados...</div>
-  <table id="tabelaResultados" style="display: none;">
-    <thead>
-      <tr>
-        <th>Nome</th>
-        <th>Kart</th>
-        <th>Melhor Volta</th>
-        <th>Tempo Atual</th>
-        <th>Voltas</th>
-      </tr>
-    </thead>
-    <tbody id="corpoTabela"></tbody>
-  </table>  <script>
-    fetch('https://cronometregemgps-default-rtdb.firebaseio.com/.json')
-      .then(response => response.json())
-      .then(data => {
-        const tabela = document.getElementById('tabelaResultados');
-        const corpoTabela = document.getElementById('corpoTabela');
-        const loading = document.getElementById('loading');
+  <h1>Resultados da Corrida</h1>
+  <div id="lista"></div>
 
-        const resultados = Object.values(data);
-        resultados.sort((a, b) => (a.melhor_volta || '').localeCompare(b.melhor_volta || ''));
+  <script>
+    const databaseURL = 'https://cronometregemgps-default-rtdb.firebaseio.com/.json';
 
-        resultados.forEach(entry => {
-          const linha = document.createElement('tr');
-          linha.innerHTML = `
-            <td>${entry.nome_piloto || 'Desconhecido'}</td>
-            <td>${entry.numero_kart || '-'}</td>
-            <td>${entry.melhor_volta || '-'}</td>
-            <td>${entry.tempo_atual || '-'}</td>
-            <td>${entry.voltas || 0}</td>
-          `;
-          corpoTabela.appendChild(linha);
+    async function carregarDados() {
+      const resposta = await fetch(databaseURL);
+      const dados = await resposta.json();
+
+      const lista = document.getElementById('lista');
+      lista.innerHTML = '';
+
+      const dadosArray = [];
+
+      for (const chave in dados) {
+        const item = dados[chave];
+        dadosArray.push({
+          nome: item.nome || 'Desconhecido',
+          kart: item.kart || 'N/D',
+          tempoAtual: item.tempo_atual || '--:--:---',
+          melhorVolta: item.melhor_volta || '--:--:---',
+          voltas: item.voltas || 0
         });
+      }
 
-        loading.style.display = 'none';
-        tabela.style.display = 'table';
-      })
-      .catch(error => {
-        document.getElementById('loading').innerText = 'Erro ao carregar os dados.';
-        console.error('Erro:', error);
+      // Ordena pela melhor volta (alfabética por enquanto, depois podemos converter para tempo real)
+      dadosArray.sort((a, b) => a.melhorVolta.localeCompare(b.melhorVolta));
+
+      dadosArray.forEach((dado, index) => {
+        const div = document.createElement('div');
+        div.className = 'piloto' + (index === 0 ? ' vencedor' : '');
+        div.innerHTML = `
+          <h3>${index === 0 ? '🏆 ' : ''}${dado.nome} (Kart ${dado.kart})</h3>
+          <p><strong>Melhor volta:</strong> ${dado.melhorVolta}</p>
+          <p><strong>Tempo atual:</strong> ${dado.tempoAtual}</p>
+          <p><strong>Total de voltas:</strong> ${dado.voltas}</p>
+        `;
+        lista.appendChild(div);
       });
-  </script></body>
+    }
+
+    setInterval(carregarDados, 3000); // Atualiza a cada 3 segundos
+  </script>
+</body>
 </html>
