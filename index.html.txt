@@ -29,8 +29,8 @@
       for (const chave in dados) {
         const item = dados[chave];
         dadosArray.push({
-          nome: item.nome || '',
-          kart: item.kart || '',
+          nome: item.nome || 'Marcos',
+          kart: item.kart || '00',
           tempoAtual: item.tempo_atual || '--:--:---',
           melhorVolta: item.melhor_volta || '--:--:---',
           voltas: item.voltas || 0
