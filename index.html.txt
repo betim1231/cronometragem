@@ -1,59 +1,86 @@
-<!DOCTYPE html>
-<html lang="pt-br">
+<!DOCTYPE html><html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Resultados da Corrida</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    h1 { color: #333; }
-    .piloto { margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
-    .vencedor { background-color: #e0ffe0; font-weight: bold; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f0f0f0;
+    }
+    h1 {
+      text-align: center;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background-color: #fff;
+    }
+    th, td {
+      padding: 12px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+    th {
+      background-color: #333;
+      color: #fff;
+    }
+    tr.highlight {
+      background-color: #c7ffd1;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
   <h1>Resultados da Corrida</h1>
-  <div id="lista"></div>
-
-  <script>
-    const databaseURL = 'https://cronometregemgps-default-rtdb.firebaseio.com/.json';
-
+  <table id="tabela-resultados">
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Kart</th>
+        <th>Melhor Volta</th>
+        <th>Tempo Atual</th>
+        <th>Voltas</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>  <script>
     async function carregarDados() {
-      const resposta = await fetch(databaseURL);
-      const dados = await resposta.json();
+      const response = await fetch('https://cronometregemgps-default-rtdb.firebaseio.com/.json');
+      const dados = await response.json();
+      const corpoTabela = document.querySelector('#tabela-resultados tbody');
+      corpoTabela.innerHTML = '';
 
-      const lista = document.getElementById('lista');
-      lista.innerHTML = '';
+      const resultados = Object.values(dados).map(piloto => ({
+        nome: piloto.nome || 'Desconhecido',
+        kart: piloto.kart || '',
+        melhor_volta: piloto.melhor_volta || '--:--:---',
+        tempo_atual: piloto.tempo_atual || '--:--:---',
+        voltas: piloto.voltas || 0
+      }));
 
-      const dadosArray = [];
+      resultados.sort((a, b) => {
+        if (!a.melhor_volta || !b.melhor_volta) return 0;
+        return a.melhor_volta.localeCompare(b.melhor_volta);
+      });
 
-      for (const chave in dados) {
-        const item = dados[chave];
-        dadosArray.push({
-          nome: item.nome || 'Desconhecido',
-          kart: item.kart || 'N/D',
-          tempoAtual: item.tempo_atual || '--:--:---',
-          melhorVolta: item.melhor_volta || '--:--:---',
-          voltas: item.voltas || 0
-        });
-      }
-
-      // Ordena pela melhor volta (alfabética por enquanto, depois podemos converter para tempo real)
-      dadosArray.sort((a, b) => a.melhorVolta.localeCompare(b.melhorVolta));
-
-      dadosArray.forEach((dado, index) => {
-        const div = document.createElement('div');
-        div.className = 'piloto' + (index === 0 ? ' vencedor' : '');
-        div.innerHTML = `
-          <h3>${index === 0 ? '🏆 ' : ''}${dado.nome} (Kart ${dado.kart})</h3>
-          <p><strong>Melhor volta:</strong> ${dado.melhorVolta}</p>
-          <p><strong>Tempo atual:</strong> ${dado.tempoAtual}</p>
-          <p><strong>Total de voltas:</strong> ${dado.voltas}</p>
+      resultados.forEach((p, i) => {
+        const tr = document.createElement('tr');
+        if (i === 0) tr.classList.add('highlight');
+        tr.innerHTML = `
+          <td>${p.nome}</td>
+          <td>${p.kart}</td>
+          <td>${p.melhor_volta}</td>
+          <td>${p.tempo_atual}</td>
+          <td>${p.voltas}</td>
         `;
-        lista.appendChild(div);
+        corpoTabela.appendChild(tr);
       });
     }
 
-    setInterval(carregarDados, 3000); // Atualiza a cada 3 segundos
-  </script>
-</body>
+    setInterval(carregarDados, 2000);
+    carregarDados();
+  </script></body>
 </html>
